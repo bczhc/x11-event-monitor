@@ -12,12 +12,7 @@ use x11_event_monitor::clipboard_sys;
 
 extern "C" fn clipboard_monitor_callback(data: *mut libc::c_char, len: clipboard_sys::size_t) {
     let data = unsafe { std::slice::from_raw_parts(data as *const u8, len as usize) };
-    let result = std::str::from_utf8(data);
-    let escaped = if let Ok(str) = result {
-        str.escape_default().to_string()
-    } else {
-        data.escape_ascii().to_string()
-    };
+    let escaped = bczhc_lib::str::escape_utf8_bytes(data);
 
     let time = Utc::now().timestamp_millis();
     println!("Clipboard {} {}", time, escaped);
