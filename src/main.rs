@@ -69,14 +69,18 @@ fn main() {
                     }
                 }
                 DeviceEvent::Key(k) => {
-                    if k.state == ElementState::Pressed {
+                    if k.state == ElementState::Pressed || k.state == ElementState::Released {
                         let code_name = keys[k.scancode as usize].as_ref();
                         let code_name = match code_name {
                             None => "UNKNOWN",
                             Some(s) => s,
                         };
+                        let prefix = match k.state {
+                            ElementState::Pressed => { "KeyPress" }
+                            ElementState::Released => { "KeyRelease" }
+                        };
 
-                        println!("Key {} {} {}", time, k.scancode, code_name);
+                        println!("{} {} {} {}", prefix, time, k.scancode, code_name);
                     }
                 }
                 _ => {}
