@@ -19,9 +19,7 @@ extern "C" fn clipboard_monitor_callback(data: *mut libc::c_char, len: clipboard
 }
 
 fn clipboard_monitor_start() {
-    unsafe {
-        clipboard_sys::start(Some(clipboard_monitor_callback))
-    }
+    unsafe { clipboard_sys::start(Some(clipboard_monitor_callback)) }
 }
 
 fn main() {
@@ -76,8 +74,8 @@ fn main() {
                             Some(s) => s,
                         };
                         let prefix = match k.state {
-                            ElementState::Pressed => { "KeyPress" }
-                            ElementState::Released => { "KeyRelease" }
+                            ElementState::Pressed => "KeyPress",
+                            ElementState::Released => "KeyRelease",
                         };
 
                         println!("{} {} {} {}", prefix, time, k.scancode, code_name);
