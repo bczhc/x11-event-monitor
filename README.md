@@ -1,5 +1,7 @@
 ## X11 Event Monitor
 
+This project has been moved to https://github.com/bczhc/rust/tree/master/apps/x11-event-monitor.
+
 Monitor events of mouse, keyboard and
 clipboard globally, essentially via X11-related APIs,
 and no root permission is required.
