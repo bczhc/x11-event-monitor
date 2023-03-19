@@ -5,25 +5,13 @@ use chrono::Utc;
 use libc::c_int;
 use winit::event::{DeviceEvent, ElementState, Event, MouseScrollDelta};
 use winit::event_loop::ControlFlow;
+use x11_clipboard::Clipboard;
 
 const KEYS: &str = include_str!("./keys");
 
-use x11_event_monitor::clipboard_sys;
-
-extern "C" fn clipboard_monitor_callback(data: *mut libc::c_char, len: clipboard_sys::size_t) {
-    let data = unsafe { std::slice::from_raw_parts(data as *const u8, len as usize) };
-    let escaped = bczhc_lib::str::escape_utf8_bytes(data);
-
-    let time = Utc::now().timestamp_millis();
-    println!("Clipboard {} {}", time, escaped);
-}
-
-fn clipboard_monitor_start() {
-    unsafe { clipboard_sys::start(Some(clipboard_monitor_callback)) }
-}
-
 fn main() {
-    spawn(clipboard_monitor_start);
+    spawn(start_clipboard_monitor);
+    spawn(start_primary_selection_monitor);
 
     let mut keys = vec![None; 256];
     for line in KEYS.lines().filter(|x| !x.is_empty()) {
@@ -85,6 +73,44 @@ fn main() {
             }
         }
     });
+}
+
+fn start_clipboard_monitor() {
+    let clipboard = Clipboard::new().unwrap();
+
+    loop {
+        let Ok(val) = clipboard
+            .load_wait(
+                clipboard.setter.atoms.clipboard,
+                clipboard.setter.atoms.string,
+                clipboard.setter.atoms.property,
+            ) else {
+            continue
+        };
+
+        let escaped = bczhc_lib::str::escape_utf8_bytes(&val);
+
+        let time = Utc::now().timestamp_millis();
+        println!("Clipboard {} {}", time, escaped);
+    }
+}
+
+fn start_primary_selection_monitor() {
+    let clipboard = Clipboard::new().unwrap();
+    loop {
+        let Ok(vec) = clipboard.load_wait(
+            clipboard.getter.atoms.primary,
+            clipboard.getter.atoms.utf8_string,
+            clipboard.getter.atoms.property,
+        ) else {
+            continue
+        };
+
+        let escaped = bczhc_lib::str::escape_utf8_bytes(&vec);
+
+        let time = Utc::now().timestamp_millis();
+        println!("Selection {} {}", time, escaped);
+    }
 }
 
 struct XDo {
